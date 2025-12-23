@@ -1,0 +1,18 @@
+@apiKey = 303205a3-1968-4e0a-855c-5c224e1f2a75
+
+
+### Start a new thread
+POST http://127.0.0.1:4069/start-thread
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+
+#### Chat with the chatbot in a specified thread.
+POST http://127.0.0.1:4069/chat
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+    "threadId": "thread_9bVNc1caBgWHgjqnyXHZgWvr",
+    "message": "hii"
+}

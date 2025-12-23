@@ -1,0 +1,81 @@
+require('dotenv').config();
+const express = require('express');
+const crm = require('./services/crm');
+const assistant = require('./services/assistant');
+
+const hostname = process.env.HOSTNAME || "0.0.0.0"; // Use 0.0.0.0 for Render deployment
+const port = process.env.PORT || 4069;
+
+const app = express();
+app.use(express.json());
+
+// Enable CORS for frontend (Cloudflare Pages, etc.)
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['*'];
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes('*') || (origin && allowedOrigins.includes(origin))) {
+        res.header('Access-Control-Allow-Origin', allowedOrigins.includes('*') ? '*' : origin);
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-API-Key');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
+app.use(apiKeyProtection); // API key protection to all endpoints. Disable it in config file.
+
+assistant.init();
+
+app.post('/start-thread', async (req, res) => {
+    try {
+        const thread = await assistant.startNewThread();
+        res.json({ "threadId": thread.id });
+    } catch (error) {
+        console.error("An error occurred when trying to start new thread.");
+        console.error(error);
+        res.status(500).json({ "error": "Failed to start new thread." });
+    }
+});
+
+app.post('/chat', async (req, res) => {
+    const data = req.body;
+    const threadId = data.threadId;
+    const userInput = data.message || '';
+  
+    if (!threadId) {
+      console.error("Error: Missing 'threadId'");
+      return res.status(400).json({ "error": "Missing 'threadId'" });
+    }
+
+    try {
+        const response = await assistant.chat(userInput, threadId);
+        res.json({ "response": response });
+    } catch (error) {
+        console.error("An error occurred when trying to create chat message.");
+        console.error(error);
+        res.status(500).json({ "error": "Failed to create chat message." });
+    }
+});
+
+app.listen(port, hostname, () => {
+    console.log(`Server running at: http://${hostname}:${port}`);
+});
+
+function apiKeyProtection(req, res, next) {
+    if (process.env.ENABLE_API_KEY == 'false') {
+        next();
+        return;
+    }
+
+    const apiKey = req.get('X-API-Key');
+    console.log(apiKey);
+    if (apiKey !== process.env.API_KEY) {
+        console.log(`Unauthorized request was made to '${req.url}'`);
+        res.status(401).json({ "error": "Invalid or missing API key." });
+        return;
+    }
+
+    next();
+}
