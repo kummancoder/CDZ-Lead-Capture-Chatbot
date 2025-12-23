@@ -3,7 +3,8 @@ const express = require('express');
 const crm = require('./services/crm');
 const assistant = require('./services/assistant');
 
-const hostname = process.env.HOSTNAME || "0.0.0.0"; // Use 0.0.0.0 for Render deployment
+// Render automatically sets PORT environment variable
+// Use 0.0.0.0 to listen on all network interfaces (required for Render)
 const port = process.env.PORT || 4069;
 
 const app = express();
@@ -59,8 +60,9 @@ app.post('/chat', async (req, res) => {
     }
 });
 
-app.listen(port, hostname, () => {
-    console.log(`Server running at: http://${hostname}:${port}`);
+// Listen on all interfaces (0.0.0.0) - required for Render
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
 });
 
 function apiKeyProtection(req, res, next) {
