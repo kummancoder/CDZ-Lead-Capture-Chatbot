@@ -259,10 +259,10 @@
         // PRODUCTION: Set your Render backend URL here
         // ============================================
         // For local development: 'http://127.0.0.1:4069'
-        // For Render deployment: 'https://your-app-name.onrender.com'
+        // For Render deployment: 'https://cdz-lead-capture-chatbot.onrender.com'
         // You can also override via URL parameter: ?apiUrl=https://your-url.com
         const urlParams = new URLSearchParams(window.location.search);
-        const API_URL = urlParams.get('apiUrl') || 'http://127.0.0.1:4069'; // TODO: Change to your Render URL for production
+        const API_URL = urlParams.get('apiUrl') || 'https://cdz-lead-capture-chatbot.onrender.com';
         const API_KEY = '303205a3-1968-4e0a-855c-5c224e1f2a75';
         
         console.log('API URL:', API_URL);
